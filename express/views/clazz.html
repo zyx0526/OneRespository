@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="clazz.css"/>
+		<link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+		<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				showClazz();
+			})
+		</script>
+		<script type="text/javascript">
+			//ajax显示所有的班级
+			function showClazz() {
+				console.log("showClazz")
+				$.ajax({
+					url:"/showClazz",
+					type:"post",
+					dataType:"json",
+					data :{},
+					//[{id:1,name:'h51811',major:'h5工程师'},{id:1,name:'h51811',major:'h5工程师'},....]
+					success:function(clazzes){
+						console.log("showClazz success"+clazzes);
+						var clazz_table = "<table class='table'><tr><th>id</th><th>班级名name</th><th>班级专业major</th><th>删除</th><th>修改</th><th>学生</th></tr>";
+						for(var i=0; i<clazzes.length; i++){
+							var clazz = clazzes[i];
+							clazz_table += "<tr><td>"+clazz.id+"</td><td>"+clazz.name+"</td><td>"+clazz.major+"</td><td><a href='javascript:delByClazzId("+clazz.id+");'>删除</a></td><td><a href='javascript:showUpdateClazzDiv("+clazz.id+", \""+clazz.name+"\", \""+clazz.major+"\" )'>修改</a></td><td><a href='/stu?clazzId="+clazz.id+"&clazzName="+clazz.name+"'>学生</td></tr>";
+						}
+						clazz_table +="</table>"
+						$("#showClazz").html(clazz_table);
+					}
+				}); 
+			}
+		</script>
+		<!--根据id删除班级-->
+		<script type="text/javascript">
+			function delByClazzId(clazzId) {
+				console.log("delByClazzId",clazzId);
+				$.ajax({
+					url:"/deleteById",
+					type:"get",
+					dataType:"json",
+					data :{clazzId:clazzId},
+					success:function(flag){
+						if(flag){//删除成功
+							showClazz()
+						}else {//删除失败
+							alert("删除失败....");
+						}
+					}
+				});  
+			}
+		</script>
+	
+		<script type="text/javascript">
+			//显示增加界面
+			function showAddClazzDiv() {
+				$("#showClazz").hide(400);
+				$("#addClazz").show(400);
+				$("#updateClazz").hide(400);
+			}
+			//显示班级界面
+			function showClazzDiv() {
+				$("#showClazz").show(400);
+				$("#addClazz").hide(400);
+				$("#updateClazz").hide(400);
+			}
+			//显示修改班级的界面
+			function showUpdateClazzDiv(id, name, major) {
+				$("#showClazz").hide(400);
+				$("#addClazz").hide(400);
+				$("#updateClazz").show(400);
+				
+				$("#oldClazzId").val(id);
+				$("#oldClazzName").val(name);
+				$("#oldClazzMajor").val(major);
+			}
+			//名字是否重复
+			function checkName(name) {
+				$.ajax({
+					url:"/checkName",
+					type:"get",
+					dataType:"json",
+					data :{name:name},
+					success:function(flag){
+						if(flag){//重复
+							$("#spanName").html("名字有重复")
+							$("#spanName").css("color","red");
+						}else {//不重复
+							$("#spanName").html("名字可用")
+							$("#spanName").css("color","yellow");
+						}
+					}
+				});  
+			}
+		</script>
+		<!--增加一个班级-->
+		<script type="text/javascript">
+			function addClazz() {
+				var name = $("#clazzName").val();
+				var major = $("#clazzMajor").val();
+				$.ajax({
+					url:"/addClazz",
+					type:"post",
+					dataType:"json",
+					data :{
+						name:name,
+						major:major
+					},
+					success:function(inf){
+						if(inf==1) {
+							showClazz()
+						}else {
+							alert("没有增加");
+						}
+					}
+				});  
+			}
+		</script>
+		<!---修改一个班级-->
+		<script type="text/javascript">
+			function updateClazz() {
+				var id = $("#oldClazzId").val();
+				var name = $("#oldClazzName").val();
+				var major = $("#oldClazzMajor").val();
+				$.ajax({
+					url:"/updateClazz",
+					type:"post",
+					dataType:"json",
+					data :{
+						clazzId:id,
+						clazzName:name,
+						clazzMajor:major
+					},
+					success:function(inf){
+						if(inf==1) {//成功
+							showClazz()
+							$("#updateInf").html("修改成功");
+						}else {//失败
+							$("#updateInf").html("修改失败");
+						}
+					}
+				});  
+			}
+		</script>
+	</head>
+	<body>
+		<div id="">
+			<h1>班级主页</h1>
+			<h1><a href='javascript:showAddClazzDiv();'>增加</a></h1>
+		</div>
+		
+		<div id="clazzContext">
+			<div id="showClazz">
+			</div> 
+			<div id="addClazz">
+				<h1 align="center">增加一个班级</h1>
+				班级名:<input type="text"  id="clazzName" onblur="checkName(this.value);"/><span id="spanName"></span><br />
+				班级专业: <input type="text" id="clazzMajor"/> <br />
+				<button onclick="addClazz();">增加班级</button>
+				<button onclick="showClazzDiv()">显示班级</button>
+			</div>
+			<div id="updateClazz">
+				<h1>修改班级</h1>
+				班级id: <input id="oldClazzId"  /><br />
+				班级名: <input id="oldClazzName" /><br />
+				专业:   <input id="oldClazzMajor" /><br />
+				<button onclick="updateClazz()">确认修改</button>
+				<button onclick="showClazzDiv()">显示班级</button>
+				<div id="updateInf"></div>
+			</div>
+			<div id="clearFloat" />
+		</div>
+		
+		
+	</body>
+</html>

@@ -1,0 +1,26 @@
+#stuContent {
+	width: 100%;
+	min-height: 400px;
+	position: relative;
+}
+#stuDiv {
+	width: 100%;
+	min-height: 400px;
+	position: absolute;
+	background: #A7DBD8;
+	display: block;
+}
+#addStuDiv {
+	width: 100%;
+	min-height: 400px;
+	position:  absolute;
+	background: #ABEF98;
+	display: none;
+}
+#updateStuDiv {
+	width: 100%;
+	min-height: 400px;
+	position:  absolute;
+	background: #C0C0C0;
+	display: none;
+}

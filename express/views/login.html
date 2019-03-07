@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>管理员登陆</title>
+	</head>
+	<body>
+		<form method="post" action="/login.do">
+			<input type="text" name="name" value="tuyy" /> <br />
+			<input type="text" name="pwd"  value="123" /> <br />
+			<input type="submit" value="登录" />
+		</form>
+		<%if(typeof inf != "undefined") {%>
+			<%=inf%>
+		<%}%>
+	</body>
+</html>

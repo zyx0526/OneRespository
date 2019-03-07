@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="stu.css"/>
+		<link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+		<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+					showStu();
+			})
+			//显示当前班级的所有学生
+			function showStu() {
+				var clazzId = $("#clazzId").val();
+				$.ajax({
+					url:"/showStu",
+					type:"post",
+					dataType:"json",
+					data:{
+						clazzId:clazzId
+					},
+					success: function(stues) {
+						var inf = "<table class='table'>"; 
+						inf += "<tr>";
+						inf += "<th>id</th>";
+						inf += "<th>loginname</th>";
+						inf += "<th>pwd</th>";
+						inf += "<th>name</th>";
+						inf += "<th>birthday</th>";
+						inf += "<th>clazzId</th>";
+						inf += "<th>删除</th>";
+						inf += "<th>修改</th>";
+						inf += "</tr>";
+						for(var i=0; i<stues.length; i++) {
+							var stu = stues[i];
+							inf += "<tr>";
+							inf += "<td>"+stu.id+"</td>";
+							inf += "<td>"+stu.loginname+"</td>";
+							inf += "<td>"+stu.pwd+"</td>";
+							inf += "<td>"+stu.name+"</td>";
+							inf += "<td>"+stu.birthday+"</td>";
+							inf += "<td>"+stu.clazzid+"</td>";
+							inf += "<td><a href='javascript:delStuById("+stu.id+")'>删除</td>";
+							inf += "<td><a href='javascript:showUpdateStuDiv("+stu.id+",\""+stu.loginname+"\",\""+stu.pwd+"\",\""+stu.name+"\",\""+stu.birthday+"\")'>修改</td>";
+							inf += "</tr>";
+						}
+						inf += "</table>";
+						$("#stuDiv").html(inf);
+					},
+				});
+			}
+			//根据id删除学生
+			function delStuById(id) {
+				$.ajax({
+					url:"/delStuById",
+					type:"post",
+					dataType:"json",
+					data:{
+						stuId:id
+					},
+					success: function(inf) {
+						if(inf==1) {//成功删除
+							showStu();
+						}else {
+							alert("删除失败")
+						}
+					},
+				});
+			}
+		</script>
+		<script type="text/javascript">
+			//出现显示学生的界面
+			function showStuDiv() {
+				$("#stuDiv").show(400);
+				$("#addStuDiv").hide(400);
+				$("#updateStuDiv").hide(400);
+			}
+			//出现增加学生的界面
+			function showAddStuDiv() {
+				$("#stuDiv").hide(400);
+				$("#addStuDiv").show(400);
+				$("#updateStuDiv").hide(400);
+			}
+			//出现修改学生的界面
+			function showUpdateStuDiv(id,loginname, pwd, name, birthday) {
+				$("#stuDiv").hide(400);
+				$("#addStuDiv").hide(400);
+				$("#updateStuDiv").show(400);
+				
+				$("#oldId").val(id);
+				$("#oldLoginname").val(loginname);
+				$("#oldPwd").val(pwd);
+				$("#oldName").val(name);
+				var myDate = new Date(birthday);
+				var year = myDate.getYear()+1900;
+				var month = myDate.getMonth()+1;
+				if(month<10) {
+					month = "0"+month;
+				}
+				var date = myDate.getDate();       
+				if(date<10) {
+					date = "0"+date;
+				}
+				document.getElementById('oldBirthday').setAttribute('value', year+"-"+month+"-"+date);
+				$.ajax({
+					url:"/showClazz",
+					type:"post",
+					dataType:"json",
+					success: function(clazzes) {
+						var clazzId = $("#clazzId").val();
+						var inf = "<select id='myselect'>"; 
+						for(var i=0; i<clazzes.length; i++) {
+							var clazz = clazzes[i];
+							inf += "<option value ='"+clazz.id+"'>"+clazz.name+"</option>";
+						}
+						inf += "</select>";
+						$("#updateClazzOption").html(inf);
+						$("#myselect option[value="+clazzId+"]").attr("selected", true);
+					},
+				});
+			}
+			//增加学生的ajax请求
+			function addStu() {
+				var stuClazzid = $("#clazzId").val();
+				var stuLoginname = $("#stuLoginname").val();
+				var stuPwd = $("#stuPwd").val();
+				var stuName = $("#stuName").val();
+				var stuBirthday = $("#stuBirthday").val();
+				$.ajax({
+					url:"/addStu",
+					type:"post",
+					dataType:"json",
+					data:{
+						clazzid:stuClazzid,
+						loginname:stuLoginname,
+						pwd:stuPwd,
+						name:stuName,
+						birthday:stuBirthday
+					},
+					success: function(inf) {
+						if(inf==1) {//成功增加
+							showStu();
+							$("#addStuInf").html("成功")
+						}else {
+							$("#addStuInf").html("失败")
+						}
+					},
+				});
+			}
+			function updateStu() {
+				
+			}
+		</script>
+	</head>
+	<body>
+		<input style="display: none;" id="clazzId" value="<%=clazz.clazzId%>" />
+		<h1 align="center"> <%=clazz.clazzName%> </h1>
+		<h1><a href="javascript:showAddStuDiv()">进入增加学生的界面</a></h1>
+		<div id="stuContent">
+			<div id="stuDiv">
+				显示学生的界面
+			</div>
+			<div id="addStuDiv">
+				<h1 align="center">增加学生的界面</h1>
+				<a href="javascript:showStuDiv()">进入显示学生的界面</a><br />
+				loginname:<input type="text" id="stuLoginname" /><br />
+				pwd<input type="text" id="stuPwd" /><br />
+				name<input type="text" id="stuName" /><br />
+				birthday<input type="date" id="stuBirthday" /><br />
+				<a href="javascript:addStu()">确认增加</a>
+				<div style="color: red; font-size: 40px;" id="addStuInf"></div>
+			</div>
+			<div id="updateStuDiv">
+				<H1 align="center">修改学生的界面</H1>
+				<a href="javascript:showStuDiv()">进入显示学生的界面</a><br />
+				<br />
+				<input type="hidden" id="oldId" />
+				loginname:<input type="text" id="oldLoginname" /><br />
+				pwd<input type="text" id="oldPwd" /><br />
+				name<input type="text" id="oldName" /><br />
+				birthday<input type="date" id="oldBirthday" /><br />
+				班级:  
+				<div id="updateClazzOption">
+				</div>
+				<a href="javascript:updateStu()">确认修改</a>
+			</div>
+		<div>
+	</body>
+</html>
